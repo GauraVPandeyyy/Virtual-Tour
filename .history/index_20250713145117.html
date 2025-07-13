@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>360° Virtual Tour</title>
+
+    <!-- Marzipano CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/marzipano/0.10.2/marzipano.min.css">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #000;
+            overflow: hidden;
+        }
+
+        #pano {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Loading Screen */
+        #loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 0.5s ease;
+        }
+
+        .loader {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #333;
+            border-top: 5px solid #fff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Controls */
+        .controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 20px;
+            border-radius: 25px;
+            backdrop-filter: blur(10px);
+        }
+
+        .control-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.05);
+        }
+
+        .control-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Scene Navigator */
+        .scene-nav {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            max-width: 200px;
+        }
+
+        .scene-nav h3 {
+            color: white;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .scene-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .scene-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            text-align: left;
+        }
+
+        .scene-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .scene-btn.active {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Hotspot Styles */
+        .hotspot {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.9);
+            border: 3px solid #007bff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            animation: pulse 2s infinite;
+        }
+
+        .hotspot:hover {
+            transform: scale(1.2);
+            background: #007bff;
+            color: white;
+        }
+
+        .hotspot::after {
+            content: '→';
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.7);
+            }
+
+            70% {
+                box-shadow: 0 0 0 10px rgba(0, 123, 255, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(0, 123, 255, 0);
+            }
+        }
+
+        /* Info Hotspot */
+        .info-hotspot {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid #28a745;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .info-hotspot:hover {
+            transform: scale(1.2);
+            background: #28a745;
+            color: white;
+        }
+
+        .info-hotspot::after {
+            content: 'i';
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        /* Info Panel */
+        .info-panel {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 400px;
+            z-index: 200;
+            backdrop-filter: blur(10px);
+            display: none;
+        }
+
+        .info-panel h3 {
+            margin-bottom: 15px;
+            color: #007bff;
+        }
+
+        .info-panel .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .scene-nav {
+                position: fixed;
+                top: 10px;
+                left: 10px;
+                right: 10px;
+                max-width: none;
+            }
+
+            .controls {
+                bottom: 10px;
+                left: 50%;
+                transform: translateX(-50%);
+                padding: 8px 15px;
+            }
+
+            .control-btn {
+                padding: 8px 12px;
+                font-size: 12px;
+            }
+
+            .info-panel {
+                left: 10px;
+                right: 10px;
+                top: 50%;
+                transform: translateY(-50%);
+                max-width: none;
+                padding: 20px;
+            }
+
+            .hotspot {
+                width: 35px;
+                height: 35px;
+            }
+        }
+
+        /* Hide elements while loading */
+        .loading .controls,
+        .loading .scene-nav {
+            display: none;
+        }
+    </style>
+</head>
+
+<body class="loading">
+    <!-- Loading Screen -->
+    <div id="loading">
+        <div class="loader"></div>
+    </div>
+
+    <!-- Panorama Container -->
+    <div id="pano"></div>
+
+    <!-- Scene Navigation -->
+    <div class="scene-nav">
+        <h3>Virtual Tour</h3>
+        <div class="scene-list">
+             <button class="scene-btn active" data-scene="3">Bathroom</button>
+            <button class="scene-btn" data-scene="0">Living Room</button>
+            <button class="scene-btn" data-scene="1">Kitchen</button>
+            <button class="scene-btn" data-scene="2">Bedroom</button>
+            <button class="scene-btn" data-scene="3">Bathroom</button>
+        </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+        <button class="control-btn" id="zoomIn">Zoom In</button>
+        <button class="control-btn" id="zoomOut">Zoom Out</button>
+        <button class="control-btn" id="fullscreen">Fullscreen</button>
+        <button class="control-btn" id="autoRotate">Auto Rotate</button>
+    </div>
+
+    <!-- Info Panel -->
+    <div class="info-panel" id="infoPanel">
+        <button class="close-btn" id="closeInfo">×</button>
+        <h3 id="infoTitle">Information</h3>
+        <p id="infoContent">Click on hotspots to learn more about this space.</p>
+    </div>
+
+    <!-- Marzipano JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marzipano/0.10.2/marzipano.min.js"></script>
+
+    <script>
+        // Scene data - replace with your own images and information
+        const scenes = [
+            {
+                id: 'Original',
+                name: 'Original Room',
+                image: './assets/panorama.png',
+                hotspots: [
+                    {
+                        yaw: 0.5,
+                        pitch: 0.1,
+                        type: 'scene',
+                        target: 1,
+                        title: 'original'
+                    },
+                    {
+                        yaw: -0.8,
+                        pitch: 0.0,
+                        type: 'info',
+                        title: 'can go anywhere',
+                        content: 'lorem50 bjbfn kyu kya huaa'
+                    }
+                ]
+            },
+            {
+                id: 'living-room',
+                name: 'Living Room',
+                image: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80',
+                hotspots: [
+                    {
+                        yaw: 0.5,
+                        pitch: 0.1,
+                        type: 'scene',
+                        target: 1,
+                        title: 'Go to Kitchen'
+                    },
+                    {
+                        yaw: -0.8,
+                        pitch: 0.0,
+                        type: 'info',
+                        title: 'Comfortable Seating',
+                        content: 'This spacious living room features comfortable seating for the whole family.'
+                    }
+                ]
+            },
+            {
+                id: 'kitchen',
+                name: 'Kitchen',
+                image: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80',
+                hotspots: [
+                    {
+                        yaw: 1.2,
+                        pitch: 0.1,
+                        type: 'scene',
+                        target: 0,
+                        title: 'Back to Living Room'
+                    },
+                    {
+                        yaw: -0.5,
+                        pitch: 0.1,
+                        type: 'scene',
+                        target: 2,
+                        title: 'Go to Bedroom'
+                    },
+                    {
+                        yaw: 0.0,
+                        pitch: -0.3,
+                        type: 'info',
+                        title: 'Modern Kitchen',
+                        content: 'Fully equipped kitchen with modern appliances and granite countertops.'
+                    }
+                ]
+            },
+            {
+                id: 'bedroom',
+                name: 'Bedroom',
+                image: 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80',
+                hotspots: [
+                    {
+                        yaw: -1.0,
+                        pitch: 0.1,
+                        type: 'scene',
+                        target: 1,
+                        title: 'Back to Kitchen'
+                    },
+                    {
+                        yaw: 0.8,
+                        pitch: 0.1,
+                        type: 'scene',
+                        target: 3,
+                        title: 'Go to Bathroom'
+                    },
+                    {
+                        yaw: 0.0,
+                        pitch: 0.0,
+                        type: 'info',
+                        title: 'Master Bedroom',
+                        content: 'Spacious master bedroom with walk-in closet and natural lighting.'
+                    }
+                ]
+            },
+            {
+                id: 'bathroom',
+                name: 'Bathroom',
+                image: 'https://images.unsplash.com/photo-1620626011761-996317b8d101?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80',
+                hotspots: [
+                    {
+                        yaw: 1.5,
+                        pitch: 0.1,
+                        type: 'scene',
+                        target: 2,
+                        title: 'Back to Bedroom'
+                    },
+                    {
+                        yaw: -0.2,
+                        pitch: -0.4,
+                        type: 'info',
+                        title: 'Luxury Bathroom',
+                        content: 'Modern bathroom with premium fixtures and elegant design.'
+                    }
+                ]
+            }
+        ];
+
+        // Initialize Marzipano
+        let viewer;
+        let currentScene = 0;
+        let autoRotateActive = false;
+
+        // Initialize the viewer
+        function initViewer() {
+            viewer = new Marzipano.Viewer(document.getElementById('pano'));
+            loadScene(0);
+        }
+
+        // Load a specific scene
+        function loadScene(sceneIndex) {
+            const scene = scenes[sceneIndex];
+
+            // Create geometry and view
+            const geometry = new Marzipano.EquirectGeometry([{ width: 4096 }]);
+            const limiter = Marzipano.RectilinearView.limit.traditional(1024, 100 * Math.PI / 180);
+            const view = new Marzipano.RectilinearView({ yaw: 0, pitch: 0, fov: 90 * Math.PI / 180 }, limiter);
+
+            // Create source
+            const source = Marzipano.ImageUrlSource.fromString(scene.image);
+
+            // Create scene
+            const marzipanoScene = viewer.createScene({
+                source: source,
+                geometry: geometry,
+                view: view,
+                pinFirstLevel: true
+            });
+
+            // Add hotspots
+            scene.hotspots.forEach(hotspot => {
+                const hotspotElement = createHotspot(hotspot);
+                marzipanoScene.hotspotContainer().createHotspot(hotspotElement, {
+                    yaw: hotspot.yaw,
+                    pitch: hotspot.pitch
+                });
+            });
+
+            // Switch to scene
+            marzipanoScene.switchTo();
+
+            // Update UI
+            updateSceneButtons(sceneIndex);
+            currentScene = sceneIndex;
+        }
+
+        // Create hotspot element
+        function createHotspot(hotspot) {
+            const element = document.createElement('div');
+
+            if (hotspot.type === 'scene') {
+                element.className = 'hotspot';
+                element.title = hotspot.title;
+                element.addEventListener('click', () => {
+                    loadScene(hotspot.target);
+                });
+            } else if (hotspot.type === 'info') {
+                element.className = 'info-hotspot';
+                element.title = hotspot.title;
+                element.addEventListener('click', () => {
+                    showInfoPanel(hotspot.title, hotspot.content);
+                });
+            }
+
+            return element;
+        }
+
+        // Update scene navigation buttons
+        function updateSceneButtons(activeIndex) {
+            const buttons = document.querySelectorAll('.scene-btn');
+            buttons.forEach((btn, index) => {
+                btn.classList.toggle('active', index === activeIndex);
+            });
+        }
+
+        // Show info panel
+        function showInfoPanel(title, content) {
+            document.getElementById('infoTitle').textContent = title;
+            document.getElementById('infoContent').textContent = content;
+            document.getElementById('infoPanel').style.display = 'block';
+        }
+
+        // Initialize controls
+        function initControls() {
+            // Scene navigation
+            document.querySelectorAll('.scene-btn').forEach((btn, index) => {
+                btn.addEventListener('click', () => {
+                    loadScene(index);
+                });
+            });
+
+            // Zoom controls
+            document.getElementById('zoomIn').addEventListener('click', () => {
+                const view = viewer.scene().view();
+                view.setFov(view.fov() * 0.8);
+            });
+
+            document.getElementById('zoomOut').addEventListener('click', () => {
+                const view = viewer.scene().view();
+                view.setFov(view.fov() * 1.2);
+            });
+
+            // Fullscreen
+            document.getElementById('fullscreen').addEventListener('click', () => {
+                if (document.fullscreenElement) {
+                    document.exitFullscreen();
+                } else {
+                    document.documentElement.requestFullscreen();
+                }
+            });
+
+            // Auto rotate
+            document.getElementById('autoRotate').addEventListener('click', () => {
+                autoRotateActive = !autoRotateActive;
+                if (autoRotateActive) {
+                    startAutoRotate();
+                    document.getElementById('autoRotate').textContent = 'Stop Rotate';
+                } else {
+                    stopAutoRotate();
+                    document.getElementById('autoRotate').textContent = 'Auto Rotate';
+                }
+            });
+
+            // Close info panel
+            document.getElementById('closeInfo').addEventListener('click', () => {
+                document.getElementById('infoPanel').style.display = 'none';
+            });
+
+            // Click outside to close info panel
+            document.getElementById('infoPanel').addEventListener('click', (e) => {
+                if (e.target === document.getElementById('infoPanel')) {
+                    document.getElementById('infoPanel').style.display = 'none';
+                }
+            });
+        }
+
+        // Auto rotate functionality
+        let autoRotateInterval;
+
+        function startAutoRotate() {
+            autoRotateInterval = setInterval(() => {
+                const view = viewer.scene().view();
+                const yaw = view.yaw();
+                view.setYaw(yaw + 0.01);
+            }, 50);
+        }
+
+        function stopAutoRotate() {
+            if (autoRotateInterval) {
+                clearInterval(autoRotateInterval);
+                autoRotateInterval = null;
+            }
+        }
+
+        // Touch controls for mobile
+        function initTouchControls() {
+            let touchStartX = 0;
+            let touchStartY = 0;
+
+            document.addEventListener('touchstart', (e) => {
+                touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
+            });
+
+            document.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+            });
+        }
+
+        // Initialize everything when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            // Hide loading screen after a delay
+            setTimeout(() => {
+                document.getElementById('loading').style.opacity = '0';
+                document.body.classList.remove('loading');
+                setTimeout(() => {
+                    document.getElementById('loading').style.display = 'none';
+                }, 500);
+            }, 1000);
+
+            // Initialize viewer and controls
+            initViewer();
+            initControls();
+            initTouchControls();
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            switch (e.key) {
+                case 'ArrowLeft':
+                    if (currentScene > 0) loadScene(currentScene - 1);
+                    break;
+                case 'ArrowRight':
+                    if (currentScene < scenes.length - 1) loadScene(currentScene + 1);
+                    break;
+                case 'f':
+                case 'F':
+                    document.getElementById('fullscreen').click();
+                    break;
+                case ' ':
+                    e.preventDefault();
+                    document.getElementById('autoRotate').click();
+                    break;
+            }
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            if (viewer) {
+                viewer.updateSize();
+            }
+        });
+    </script>
+</body>
+
+</html>

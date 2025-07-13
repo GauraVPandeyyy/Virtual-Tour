@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>360° Virtual Tour</title>
+    
+    <!-- Marzipano CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/marzipano/0.10.2/marzipano.min.css">
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="loading">
+    <!-- Loading Screen -->
+    <div id="loading">
+        <div class="loader"></div>
+    </div>
+
+    <!-- Panorama Container -->
+    <div id="pano"></div>
+
+    <!-- Scene Navigation -->
+    <div class="scene-nav">
+        <h3>Virtual Tour</h3>
+        <div class="scene-list">
+            <button class="scene-btn active" data-scene="0">Living Room</button>
+            <button class="scene-btn" data-scene="1">Kitchen</button>
+            <button class="scene-btn" data-scene="2">Bedroom</button>
+            <button class="scene-btn" data-scene="3">Bathroom</button>
+        </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+        <button class="control-btn" id="zoomIn">Zoom In</button>
+        <button class="control-btn" id="zoomOut">Zoom Out</button>
+        <button class="control-btn" id="fullscreen">Fullscreen</button>
+        <button class="control-btn" id="autoRotate">Auto Rotate</button>
+    </div>
+
+    <!-- Info Panel -->
+    <div class="info-panel" id="infoPanel">
+        <button class="close-btn" id="closeInfo">×</button>
+        <h3 id="infoTitle">Information</h3>
+        <p id="infoContent">Click on hotspots to learn more about this space.</p>
+    </div>
+
+    <!-- Marzipano JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marzipano/0.10.2/marzipano.min.js"></script>
+
+    <script src="app.js"></script>
+
+</body>
+</html>

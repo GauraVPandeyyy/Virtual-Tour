@@ -1,0 +1,42 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: Arial;
+}
+
+#pano-container {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+}
+
+#pano {
+    width: 100%;
+    height: 100%;
+}
+
+.controls {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+.controls button {
+    background: rgba(0,0,0,0.5);
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    margin: 5px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.hotspot {
+    width: 30px;
+    height: 30px;
+    background: url('assets/hotspot-icon.png');
+    background-size: contain;
+    cursor: pointer;
+}
