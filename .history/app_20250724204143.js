@@ -98,7 +98,27 @@ const scenes = [
             }
         ]
     },
-    
+    {
+        id: 'bathroom',
+        name: 'Bathroom',
+        image: './assets/p1.png',
+        hotspots: [
+            {
+                yaw: 1.5,
+                pitch: 0.1,
+                type: 'scene',
+                target: 2,
+                title: 'Back to Bedroom'
+            },
+            {
+                yaw: -0.2,
+                pitch: -0.4,
+                type: 'info',
+                title: 'Luxury Bathroom',
+                content: 'Modern bathroom with premium fixtures and elegant design.'
+            }
+        ]
+    }
 ];
 
 // Initialize Marzipano
