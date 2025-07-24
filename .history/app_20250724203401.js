@@ -101,7 +101,7 @@ const scenes = [
     {
         id: 'bathroom',
         name: 'Bathroom',
-        image: './assets/p1.png',
+        image: 'https://images.unsplash.com/photo-1620626011761-996317b8d101?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80',
         hotspots: [
             {
                 yaw: 1.5,

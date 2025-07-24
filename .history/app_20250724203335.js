@@ -24,7 +24,7 @@ const scenes = [
     {
         id: 'living-room',
         name: 'Living Room',
-        image: './assets/p2.png',
+        image: './assets/p1.png',
         hotspots: [
             {
                 yaw: 0.5,
@@ -45,8 +45,7 @@ const scenes = [
     {
         id: 'kitchen',
         name: 'Kitchen',
-        image: './assets/p3.png',
-        hotspots: [
+        image: './assets/p1.png', hotspots: [
             {
                 yaw: 1.2,
                 pitch: 0.1,
@@ -73,7 +72,7 @@ const scenes = [
     {
         id: 'bedroom',
         name: 'Bedroom',
-        image: './assets/p4.png',
+        image: 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80',
         hotspots: [
             {
                 yaw: -1.0,
@@ -101,7 +100,7 @@ const scenes = [
     {
         id: 'bathroom',
         name: 'Bathroom',
-        image: './assets/p1.png',
+        image: 'https://images.unsplash.com/photo-1620626011761-996317b8d101?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80',
         hotspots: [
             {
                 yaw: 1.5,

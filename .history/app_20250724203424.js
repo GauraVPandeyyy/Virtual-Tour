@@ -101,7 +101,7 @@ const scenes = [
     {
         id: 'bathroom',
         name: 'Bathroom',
-        image: './assets/p1.png',
+image: './assets/p1.png',
         hotspots: [
             {
                 yaw: 1.5,
